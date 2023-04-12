@@ -38,7 +38,7 @@ def create_store():
     data = request.get_json()
     
     if 'name' not in data:
-        return {'message':'Lutfen name parametresi girin'}
+        return {'message':'Lutfen name parametresi giriniz'}
     
     for store in stores.values():
         if data['name'] == store['name']:

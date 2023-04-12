@@ -48,8 +48,17 @@ def create_item():
     create new item
     '''
     data = request.get_json()
-    if data['store_id'] not in stores:
-        return {'message':'Store not found'},404
+    if ( 'price' not in data
+        or 'store_id' not in data
+        or 'name' not in data):
+        return {'message': 'Lutfen verinin icinde price, store_id ve name oldugundan emin olun'}, 400
+    
+    for item in items.values():
+        if (data['name'] == item['name'] and
+            data['store_id'] == item['store_id']):
+            return {'message':'Bu dukkanda zaten o malzeme var'}
+    # if data['store_id'] not in stores:
+    #     return {'message':'Store not found'},404
     
     item_id = uuid.uuid4().hex
     new_item = {**data, 'id':item_id}

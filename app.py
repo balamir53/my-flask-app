@@ -98,3 +98,11 @@ def get_item_in_store(item_id):
 def index(name):
     # name = 'Rosalia'
     return render_template('index.html', title='Welcome', username=name)
+
+@app.delete('/item/<string:item_id>')
+def delete_item(item_id):
+    try:
+        del items[item_id]
+        return {'message':'Item deleted.'}
+    except KeyError:
+        return {'message': 'Item not found'}

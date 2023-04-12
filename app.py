@@ -36,6 +36,14 @@ def create_store():
     create a new store
     '''
     data = request.get_json()
+    
+    if 'name' not in data:
+        return {'message':'Lutfen name parametresi girin'}
+    
+    for store in stores.values():
+        if data['name'] == store['name']:
+            return{'message':'Bu isimde zaten bir dukkan var'}
+        
     store_id = uuid.uuid4().hex
     new_store = {**data, 'id':store_id}
     stores[store_id] = new_store

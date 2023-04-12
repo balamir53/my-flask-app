@@ -106,3 +106,23 @@ def delete_item(item_id):
         return {'message':'Item deleted.'}
     except KeyError:
         return {'message': 'Item not found'}
+    
+@app.delete('/store/<string:store_id>')
+def delete_store(store_id):
+    try:
+        del stores[store_id]
+        return {'message':'Store deleted.'}
+    except KeyError:
+        return {'message': 'Store not found'}
+    
+@app.put('/item/<string:item_id>')
+def update_item(item_id):
+    data = request.get_json()
+    if 'price' not in data or 'name' not in data:
+        return {'message':'Lutfen price ya da name paratmetresi girin'}
+    try:
+        item = items[item_id]
+        item |= data
+        return item, 200
+    except KeyError:
+        return {'message':'Item not found'}

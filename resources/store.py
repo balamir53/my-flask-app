@@ -5,10 +5,13 @@ from db import stores
 from flask_smorest import Blueprint, abort
 from flask.views import MethodView
 
+from schemas import StoreSchema
+
 blp = Blueprint("stores", __name__, description="Operations on stores")
 
 @blp.route('/store/<string:store_id>')
 class Store(MethodView):
+    @blp.response(200, StoreSchema)
     def get(self, store_id):
         try:
             return stores[store_id]
@@ -24,22 +27,20 @@ class Store(MethodView):
 
 @blp.route('/store')
 class StoreList(MethodView):
+    @blp.response(200, StoreSchema(many=True))
     def get(self):
         '''
         get all the stores
         '''
-        return {'stores':list(stores.values())}
-    def post(self):
+        return stores.values()
+    
+    @blp.arguments(StoreSchema)
+    @blp.response(201, StoreSchema)
+    def post(self,data):
         '''
         create a new store
         '''
-        data = request.get_json()
-    
-        if 'name' not in data:
-            abort(400,
-                message = 'Bad request. Lutfen "name" parametresini de girin'
-            )
-    
+
         for store in stores.values():
             if data['name'] == store['name']:
                 abort(400, message='Bu isimde zaten bir dukkan var')

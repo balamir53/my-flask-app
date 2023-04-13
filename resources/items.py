@@ -2,6 +2,7 @@ import uuid
 from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
+from schemas import ItemSchema, ItemUpdateSchema
 
 from db import items
 
@@ -10,6 +11,7 @@ blp = Blueprint('items', __name__, description='Operations on items')
 
 @blp.route('/item/<string:item_id>')
 class Item(MethodView):
+    @blp.response(200, ItemSchema)
     def get(self, item_id):
         '''
         get specific item via its id
@@ -27,10 +29,10 @@ class Item(MethodView):
             return {'message':'Item deleted.'}
         except KeyError:
             abort(404, message='Item not found')
-    def put(self, item_id):
-        data = request.get_json()
-        if 'price' not in data or 'name' not in data:
-            abort(400, message='Lutfen price ya da name parametresini girin')
+            
+    @blp.arguments(ItemUpdateSchema)
+    @blp.response(200, ItemSchema)
+    def put(self, data, item_id):
         try:
             item = items[item_id]
             item |= data
@@ -41,22 +43,19 @@ class Item(MethodView):
 
 @blp.route('/item')
 class ItemLists(MethodView):
+    @blp.response(200, ItemSchema(many=True))
     def get(self):
         '''
         get all the items
         '''
-        return {'items':list(items.values())}
+        return items.values()
 
-    def post(self):
+    @blp.arguments(ItemSchema)
+    @blp.response(201, ItemSchema)
+    def post(self, data):
         '''
         create item
         '''
-        data = request.get_json()
-        if ( 'price' not in data
-            or 'store_id' not in data
-            or 'name' not in data):
-            abort(400, message= 'Lutfen verinin icinde price, store_id ve name oldugundan emin olun')
-        
         for item in items.values():
             if (data['name'] == item['name'] and
                 data['store_id'] == item['store_id']):

@@ -1,9 +1,12 @@
 import uuid
 from flask import request
 from db import stores
+from db import db
+from sqlalchemy.exc import SQLAlchemyError
 
 from flask_smorest import Blueprint, abort
 from flask.views import MethodView
+from models import StoreModel
 
 from schemas import StoreSchema
 
@@ -41,12 +44,12 @@ class StoreList(MethodView):
         create a new store
         '''
 
-        for store in stores.values():
-            if data['name'] == store['name']:
-                abort(400, message='Bu isimde zaten bir dukkan var')
-        
-        store_id = uuid.uuid4().hex
-        new_store = {**data, 'id':store_id}
-        stores[store_id] = new_store
-        
+        new_store = StoreModel(**data)
+
+        try:
+            db.session.add(new_store)
+            db.session.commit()
+        except SQLAlchemyError:
+            abort(500, message='Bir hata olustu')
+
         return new_store, 201

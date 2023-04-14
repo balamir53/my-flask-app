@@ -5,6 +5,9 @@ from flask_smorest import Blueprint, abort
 from schemas import ItemSchema, ItemUpdateSchema
 
 from db import items
+from models import ItemModel
+from db import db
+from sqlalchemy.exc import SQLAlchemyError
 
 blp = Blueprint('items', __name__, description='Operations on items')
 
@@ -56,12 +59,12 @@ class ItemLists(MethodView):
         '''
         create item
         '''
-        for item in items.values():
-            if (data['name'] == item['name'] and
-                data['store_id'] == item['store_id']):
-                abort(400, message='Bu dukkanda zaten o malzeme var')
+        item = ItemModel(**data)
         
-        item_id = uuid.uuid4().hex
-        new_item = {**data, 'id':item_id}
-        items[item_id] = new_item
-        return new_item, 201
+        try:
+            db.session.add(item)
+            db.session.commit()
+        except SQLAlchemyError:
+            abort(500, message='Bir hata olustu')
+
+        return item, 201

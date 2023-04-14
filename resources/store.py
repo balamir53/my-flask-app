@@ -3,6 +3,7 @@ from flask import request
 from db import stores
 from db import db
 from sqlalchemy.exc import SQLAlchemyError
+from flask_jwt_extended import jwt_required
 
 from flask_smorest import Blueprint, abort
 from flask.views import MethodView
@@ -26,6 +27,7 @@ class Store(MethodView):
 
 @blp.route('/store')
 class StoreList(MethodView):
+    @jwt_required()
     @blp.response(200, StoreSchema(many=True))
     def get(self):
         '''

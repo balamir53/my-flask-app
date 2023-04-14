@@ -19,29 +19,34 @@ class Item(MethodView):
         '''
         get specific item via its id
         '''
-        try:
-            return items[item_id]
-        except KeyError:
-            abort(404, message='item not found')
+        item = ItemModel.query.get_or_404(item_id)
+        return item
     def delete(self, item_id):
         '''
         delete an item
         '''
-        try:
-            del items[item_id]
-            return {'message':'Item deleted.'}
-        except KeyError:
-            abort(404, message='Item not found')
+        item = ItemModel.query.get_or_404(item_id)
+        db.session.delete(item)
+        db.session.commit()
+        return {'message':'Item deleted'}
             
     @blp.arguments(ItemUpdateSchema)
     @blp.response(200, ItemSchema)
     def put(self, data, item_id):
-        try:
-            item = items[item_id]
-            item |= data
-            return item, 200
-        except KeyError:
-            abort(404,message='Item not found')
+        item = ItemModel.query.get(item_id)
+        if item:
+            if data.get('price'):
+                item.price = data['price']
+            if data.get('name'):
+                item.name = data['name']
+        else:
+            # item = ItemModel(**data, id=item_id)
+            # return {'message':'Boyle bir item yok','price':4}
+            abort(404, message='Boyle bir item yok')
+        db.session.add(item)
+        db.session.commit()
+
+        return item
 
 
 @blp.route('/item')
@@ -51,7 +56,7 @@ class ItemLists(MethodView):
         '''
         get all the items
         '''
-        return items.values()
+        return ItemModel.query.all()
 
     @blp.arguments(ItemSchema)
     @blp.response(201, ItemSchema)

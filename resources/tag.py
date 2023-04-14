@@ -18,6 +18,7 @@ class TagsInStore(MethodView):
         store = StoreModel.query.get_or_404(store_id)
         return store.tags.all()
     @blp.arguments(TagSchema)
+    @blp.response(201, TagSchema)
     def post(self, data, store_id):
         '''
         create a tag in the store
@@ -32,6 +33,8 @@ class TagsInStore(MethodView):
             db.session.commit()
         except SQLAlchemyError:
             abort(500, message='Error occurred')
+
+        return tag
 
 @blp.route('/tag/<string:tag_id>')
 class Tag(MethodView):
